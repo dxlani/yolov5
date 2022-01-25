@@ -148,7 +148,7 @@ def detect(save_img=False):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--weights', nargs='+', type=str, default='yolov5s.pt', help='model.pt path(s)')
+    parser.add_argument('--weights', nargs='+', type=str, default='weights/last.pt', help='model.pt path(s)')
     # parser.add_argument('--source', type=str, default='rtsp://admin:jhx12345@192.168.1.249:554/Streaming/Channels/1', help='source')  # file/folder, 0 for webcam
     # parser.add_argument('--source', type=str, default='rtsp://admin:hik12345@112.4.115.97:8234/Streaming/Channels/1', help='source')  # file/folder, 0 for webcam
     parser.add_argument('--source', type=str, default='0', help='source')  # file/folder, 0 for webcam
