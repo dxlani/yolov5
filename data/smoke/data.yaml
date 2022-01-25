@@ -1,5 +1,5 @@
-train: data/smoke/train/images
-val: data/smoke/train/images
+train: data/smoke/train
+val: data/smoke/valid
 
 nc: 1
 names: ["smoke"]
