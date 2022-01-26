@@ -456,20 +456,35 @@ def train(hyp, opt, device, tb_writer=None):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    # 权重文件路径，用于迁移训练，可以以官方提供的几个训练好的模型为基础进行训练
     parser.add_argument('--weights', type=str, default='yolov5s.pt', help='initial weights path')
+    # 存储模型结构的配置文件
     parser.add_argument('--cfg', type=str, default='models/yolov5s.yaml', help='model.yaml path')
+    # 存储训练、测试的数据的文件
     parser.add_argument('--data', type=str, default='data/smoke/data.yaml', help='data.yaml path')
+    # 超参数配置的yaml文件路径
     parser.add_argument('--hyp', type=str, default='data/hyp.scratch.yaml', help='hyperparameters path')
-    parser.add_argument('--epochs', type=int, default=2)
-    parser.add_argument('--batch-size', type=int, default=8, help='total batch size for all GPUs')
+    # 训练总轮次
+    parser.add_argument('--epochs', type=int, default=160)
+    # 每个轮次下图片训练的批次大小
+    parser.add_argument('--batch-size', type=int, default=10, help='total batch size for all GPUs')
+    # 输入图片宽高,必须是32的倍数，输入250会自动调整成256,注意这里是训练和mAP测试的图像尺寸，而不是一个图像的宽高
     parser.add_argument('--img-size', nargs='+', type=int, default=[640, 640], help='[train, test] image sizes')
+    # 进行矩形训练
     parser.add_argument('--rect', action='store_true', help='rectangular training')
-    parser.add_argument('--resume', nargs='?', const=True, default=False, help='resume most recent training')
+    # 恢复最近保存的模型开始训练 从给定的path/last.pt恢复训练，如果为空，则从最近保存的path/last.pt恢复训练
+    parser.add_argument('--resume', nargs='?', const=True, default=True, help='resume most recent training')
+    # 仅保存最终checkpoint
     parser.add_argument('--nosave', action='store_true', help='only save final checkpoint')
+    # 仅测试最后的epoch
     parser.add_argument('--notest', action='store_true', help='only test final epoch')
+    # 不自动调整anchor
     parser.add_argument('--noautoanchor', action='store_true', help='disable autoanchor check')
+    # 否进行超参数进化
     parser.add_argument('--evolve', action='store_true', help='evolve hyperparameters')
+    # gsutil bucket
     parser.add_argument('--bucket', type=str, default='', help='gsutil bucket')
+    # 是否提前缓存图片到内存，以加快训练速度，默认为False
     parser.add_argument('--cache-images', action='store_true', help='cache images for faster training')
     parser.add_argument('--image-weights', action='store_true', help='use weighted image selection for training')
     parser.add_argument('--device', default='', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
