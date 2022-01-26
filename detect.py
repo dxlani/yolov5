@@ -16,6 +16,7 @@ from utils.torch_utils import select_device, load_classifier, time_synchronized
 
 
 def detect(save_img=False):
+    # 获取输出文件夹，输入源，权重，参数等参数
     source, weights, view_img, save_txt, imgsz = opt.source, opt.weights, opt.view_img, opt.save_txt, opt.img_size
     save_img = not opt.nosave and not source.endswith('.txt')  # save inference images
     webcam = source.isnumeric() or source.endswith('.txt') or source.lower().startswith(
@@ -26,6 +27,7 @@ def detect(save_img=False):
     (save_dir / 'labels' if save_txt else save_dir).mkdir(parents=True, exist_ok=True)  # make dir
 
     # Initialize
+    # 获取设备
     set_logging()
     device = select_device(opt.device)
     half = device.type != 'cpu'  # half precision only supported on CUDA
@@ -153,16 +155,24 @@ if __name__ == '__main__':
     # parser.add_argument('--source', type=str, default='rtsp://admin:hik12345@112.4.115.97:8234/Streaming/Channels/1', help='source')  # file/folder, 0 for webcam
     parser.add_argument('--source', type=str, default='0', help='source')  # file/folder, 0 for webcam
     parser.add_argument('--img-size', type=int, default=640, help='inference size (pixels)')
+    # 置信度阈值
     parser.add_argument('--conf-thres', type=float, default=0.25, help='object confidence threshold')
+    # 做nms的iou阈值
     parser.add_argument('--iou-thres', type=float, default=0.45, help='IOU threshold for NMS')
     parser.add_argument('--device', default='', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
+    # 是否展示预测之后的图片/视频
     parser.add_argument('--view-img', action='store_true', help='display results',default=True)
+    # 是否将预测的框坐标以txt文件形式保存
     parser.add_argument('--save-txt', action='store_true', help='save results to *.txt')
     parser.add_argument('--save-conf', action='store_true', help='save confidences in --save-txt labels')
     parser.add_argument('--nosave', action='store_true', help='do not save images/videos')
+    # 设置只保留某一部分类别
     parser.add_argument('--classes', nargs='+', type=int, help='filter by class: --class 0, or --class 0 2 3')
+    # 进行nms是否也去除不同类别之间的框
     parser.add_argument('--agnostic-nms', action='store_true', help='class-agnostic NMS')
+    # 推理的时候进行多尺度，翻转等操作(TTA)推理
     parser.add_argument('--augment', action='store_true', help='augmented inference')
+    # 如果为True，则对所有模型进行strip_optimizer操作，去除pt文件中的优化器等信息
     parser.add_argument('--update', action='store_true', help='update all models')
     parser.add_argument('--project', default='runs/detect', help='save results to project/name')
     parser.add_argument('--name', default='expa', help='save results to project/name')
@@ -175,6 +185,7 @@ if __name__ == '__main__':
         if opt.update:  # update all models (to fix SourceChangeWarning)
             for opt.weights in ['yolov5s.pt', 'yolov5m.pt', 'yolov5l.pt', 'yolov5x.pt']:
                 detect()
+                # 去除pt文件中的优化器等信息
                 strip_optimizer(opt.weights)
         else:
             detect()
