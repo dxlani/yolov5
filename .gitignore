@@ -19,6 +19,7 @@
 *.avi
 *.data
 *.json
+*.txt
 
 .cache
 
