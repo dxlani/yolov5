@@ -457,11 +457,11 @@ def train(hyp, opt, device, tb_writer=None):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     # 权重文件路径，用于迁移训练，可以以官方提供的几个训练好的模型为基础进行训练
-    parser.add_argument('--weights', type=str, default='yolov5s.pt', help='initial weights path')
+    parser.add_argument('--weights', type=str, default='runs/train/exp/weights/best.pt', help='initial weights path')
     # 存储模型结构的配置文件
     parser.add_argument('--cfg', type=str, default='models/yolov5s.yaml', help='model.yaml path')
     # 存储训练、测试的数据的文件
-    parser.add_argument('--data', type=str, default='data/smoke/data.yaml', help='data.yaml path')
+    parser.add_argument('--data', type=str, default='data/mask/data.yaml', help='data.yaml path')
     # 超参数配置的yaml文件路径
     parser.add_argument('--hyp', type=str, default='data/hyp.scratch.yaml', help='hyperparameters path')
     # 训练总轮次
