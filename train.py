@@ -457,15 +457,15 @@ def train(hyp, opt, device, tb_writer=None):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     # 权重文件路径，用于迁移训练，可以以官方提供的几个训练好的模型为基础进行训练
-    parser.add_argument('--weights', type=str, default='yolov5s.pt', help='initial weights path')
+    parser.add_argument('--weights', type=str, default='runs/train/exp2/weights/best.pt', help='initial weights path')
     # 存储模型结构的配置文件
     parser.add_argument('--cfg', type=str, default='models/yolov5s.yaml', help='model.yaml path')
     # 存储训练、测试的数据的文件
-    parser.add_argument('--data', type=str, default='phone/data.yaml', help='data.yaml path')
+    parser.add_argument('--data', type=str, default='smoke/data.yaml', help='data.yaml path')
     # 超参数配置的yaml文件路径
     parser.add_argument('--hyp', type=str, default='data/hyp.scratch.yaml', help='hyperparameters path')
     # 训练总轮次
-    parser.add_argument('--epochs', type=int, default=10)
+    parser.add_argument('--epochs', type=int, default=100)
     # 每个轮次下图片训练的批次大小
     parser.add_argument('--batch-size', type=int, default=10, help='total batch size for all GPUs')
     # 输入图片宽高,必须是32的倍数，输入250会自动调整成256,注意这里是训练和mAP测试的图像尺寸，而不是一个图像的宽高
@@ -488,9 +488,13 @@ if __name__ == '__main__':
     parser.add_argument('--cache-images', action='store_true', help='cache images for faster training')
     parser.add_argument('--image-weights', action='store_true', help='use weighted image selection for training')
     parser.add_argument('--device', default='', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
+    # 是否进行多尺度训练，默认为False +/- 50%%
     parser.add_argument('--multi-scale', action='store_true', help='vary img-size +/- 50%%')
+    # 将所有数据按照一个类别进行训练
     parser.add_argument('--single-cls', action='store_true', help='train multi-class data as single-class')
+    # 是否使用 torch.optim.Adam() 优化器，默认是False
     parser.add_argument('--adam', action='store_true', help='use torch.optim.Adam() optimizer')
+    # 是否使用跨卡同步BN，仅在DDP模式中使用
     parser.add_argument('--sync-bn', action='store_true', help='use SyncBatchNorm, only available in DDP mode')
     parser.add_argument('--local_rank', type=int, default=-1, help='DDP parameter, do not modify')
     parser.add_argument('--workers', type=int, default=8, help='maximum number of dataloader workers')
@@ -499,7 +503,9 @@ if __name__ == '__main__':
     parser.add_argument('--name', default='exp', help='save to project/name')
     parser.add_argument('--exist-ok', action='store_true', help='existing project/name ok, do not increment')
     parser.add_argument('--quad', action='store_true', help='quad dataloader')
+    # 采用余弦退火的算法进行调整学习率
     parser.add_argument('--linear-lr', action='store_true', help='linear LR')
+    # 标签平滑操作
     parser.add_argument('--label-smoothing', type=float, default=0.0, help='Label smoothing epsilon')
     parser.add_argument('--upload_dataset', action='store_true', help='Upload dataset as W&B artifact table')
     parser.add_argument('--bbox_interval', type=int, default=-1, help='Set bounding-box image logging interval for W&B')

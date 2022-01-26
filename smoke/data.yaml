@@ -1,5 +1,0 @@
-train: data/smoke/train
-val: data/smoke/valid
-
-nc: 1
-names: ["smoke"]
