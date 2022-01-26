@@ -457,15 +457,15 @@ def train(hyp, opt, device, tb_writer=None):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     # 权重文件路径，用于迁移训练，可以以官方提供的几个训练好的模型为基础进行训练
-    parser.add_argument('--weights', type=str, default='runs/train/exp/weights/best.pt', help='initial weights path')
+    parser.add_argument('--weights', type=str, default='yolov5s.pt', help='initial weights path')
     # 存储模型结构的配置文件
     parser.add_argument('--cfg', type=str, default='models/yolov5s.yaml', help='model.yaml path')
     # 存储训练、测试的数据的文件
-    parser.add_argument('--data', type=str, default='data/mask/data.yaml', help='data.yaml path')
+    parser.add_argument('--data', type=str, default='phone/data.yaml', help='data.yaml path')
     # 超参数配置的yaml文件路径
     parser.add_argument('--hyp', type=str, default='data/hyp.scratch.yaml', help='hyperparameters path')
     # 训练总轮次
-    parser.add_argument('--epochs', type=int, default=160)
+    parser.add_argument('--epochs', type=int, default=10)
     # 每个轮次下图片训练的批次大小
     parser.add_argument('--batch-size', type=int, default=10, help='total batch size for all GPUs')
     # 输入图片宽高,必须是32的倍数，输入250会自动调整成256,注意这里是训练和mAP测试的图像尺寸，而不是一个图像的宽高
@@ -473,7 +473,7 @@ if __name__ == '__main__':
     # 进行矩形训练
     parser.add_argument('--rect', action='store_true', help='rectangular training')
     # 恢复最近保存的模型开始训练 从给定的path/last.pt恢复训练，如果为空，则从最近保存的path/last.pt恢复训练
-    parser.add_argument('--resume', nargs='?', const=True, default=True, help='resume most recent training')
+    parser.add_argument('--resume', nargs='?', const=True, default=False, help='resume most recent training')
     # 仅保存最终checkpoint
     parser.add_argument('--nosave', action='store_true', help='only save final checkpoint')
     # 仅测试最后的epoch

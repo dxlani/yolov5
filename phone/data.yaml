@@ -1,0 +1,5 @@
+train: phone/images/train
+val: phone/images/val
+
+nc: 1
+names: ["phone"]
