@@ -3,31 +3,31 @@
 # See tutorials for hyperparameter evolution https://github.com/ultralytics/yolov5#tutorials
 
 
-lr0: 0.01  # initial learning rate (SGD=1E-2, Adam=1E-3)
-lrf: 0.2  # final OneCycleLR learning rate (lr0 * lrf)
-momentum: 0.937  # SGD momentum/Adam beta1
-weight_decay: 0.0005  # optimizer weight decay 5e-4
-warmup_epochs: 3.0  # warmup epochs (fractions ok)
-warmup_momentum: 0.8  # warmup initial momentum
-warmup_bias_lr: 0.1  # warmup initial bias lr
+lr0: 0.01  # initial learning rate (SGD=1E-2, Adam=1E-3) 学习率，可以理解为模型的学习速度
+lrf: 0.2  # final OneCycleLR learning rate (lr0 * lrf) OneCycleLR学习率变化策略的最终学习率系数
+momentum: 0.937  # SGD momentum/Adam beta1 动量，梯度下降法中一种常用的加速技术，加快收敛
+weight_decay: 0.0005  # optimizer weight decay 5e-4 权值衰减，防止过拟合。在损失函数中，weight decay是正则项（regularization）前的一个系数
+warmup_epochs: 3.0  # warmup epochs (fractions ok) 预热学习轮数
+warmup_momentum: 0.8  # warmup initial momentum 预热学习初始动量
+warmup_bias_lr: 0.1  # warmup initial bias lr 预热学习初始偏差学习率
 box: 0.05  # box loss gain
-cls: 0.5  # cls loss gain
-cls_pw: 1.0  # cls BCELoss positive_weight
-obj: 1.0  # obj loss gain (scale with pixels)
-obj_pw: 1.0  # obj BCELoss positive_weight
-iou_t: 0.20  # IoU training threshold
-anchor_t: 4.0  # anchor-multiple threshold
+cls: 0.5  # cls loss gain 类别损失收益
+cls_pw: 1.0  # cls BCELoss positive_weight 类别交叉熵损失正类权重
+obj: 1.0  # obj loss gain (scale with pixels) 是否有物体损失收益
+obj_pw: 1.0  # obj BCELoss positive_weight 是否有物体交叉熵正类权重
+iou_t: 0.20  # IoU training threshold iou阈值
+anchor_t: 4.0  # anchor-multiple threshold 多尺度anchor阈值
 # anchors: 3  # anchors per output layer (0 to ignore)
-fl_gamma: 0.0  # focal loss gamma (efficientDet default gamma=1.5)
-hsv_h: 0.015  # image HSV-Hue augmentation (fraction)
-hsv_s: 0.7  # image HSV-Saturation augmentation (fraction)
-hsv_v: 0.4  # image HSV-Value augmentation (fraction)
-degrees: 0.0  # image rotation (+/- deg)
-translate: 0.1  # image translation (+/- fraction)
-scale: 0.5  # image scale (+/- gain)
-shear: 0.0  # image shear (+/- deg)
-perspective: 0.0  # image perspective (+/- fraction), range 0-0.001
-flipud: 0.0  # image flip up-down (probability)
-fliplr: 0.5  # image flip left-right (probability)
-mosaic: 1.0  # image mosaic (probability)
-mixup: 0.0  # image mixup (probability)
+fl_gamma: 0.0  # focal loss gamma (efficientDet default gamma=1.5)   focal loss gamma系数
+hsv_h: 0.015  # image HSV-Hue augmentation (fraction) 色调Hue，增强系数
+hsv_s: 0.7  # image HSV-Saturation augmentation (fraction) 饱和度Saturation，增强系数
+hsv_v: 0.4  # image HSV-Value augmentation (fraction) 明度Value，增强系数
+degrees: 0.0  # image rotation (+/- deg) 图片旋转角度
+translate: 0.1  # image translation (+/- fraction) 图片转换
+scale: 0.5  # image scale (+/- gain) 图片缩放
+shear: 0.0  # image shear (+/- deg) 图片仿射变换
+perspective: 0.0  # image perspective (+/- fraction), range 0-0.001 透视变换
+flipud: 0.0  # image flip up-down (probability) 图片仿射变换
+fliplr: 0.5  # image flip left-right (probability) 透视变换
+mosaic: 1.0  # image mosaic (probability) mosaic数据增强
+mixup: 0.0  # image mixup (probability) mixup数据增强

@@ -77,37 +77,40 @@ yolo_labels_dir = os.path.join(work_sapce_dir, "YOLOLabels/")
 if not os.path.isdir(yolo_labels_dir):
     os.mkdir(yolo_labels_dir)
 clear_hidden_files(yolo_labels_dir)
-yolov5_images_dir = os.path.join(work_sapce_dir, "images/")
-if not os.path.isdir(yolov5_images_dir):
-    os.mkdir(yolov5_images_dir)
-clear_hidden_files(yolov5_images_dir)
-yolov5_labels_dir = os.path.join(work_sapce_dir, "labels/")
-if not os.path.isdir(yolov5_labels_dir):
-    os.mkdir(yolov5_labels_dir)
-clear_hidden_files(yolov5_labels_dir)
-yolov5_images_train_dir = os.path.join(yolov5_images_dir, "train/")
+
+yolov5_train_dir = os.path.join(work_sapce_dir, "train/")
+if not os.path.isdir(yolov5_train_dir):
+    os.mkdir(yolov5_train_dir)
+clear_hidden_files(yolov5_train_dir)
+yolov5_images_train_dir = os.path.join(yolov5_train_dir, "images/")
 if not os.path.isdir(yolov5_images_train_dir):
     os.mkdir(yolov5_images_train_dir)
 clear_hidden_files(yolov5_images_train_dir)
-yolov5_images_test_dir = os.path.join(yolov5_images_dir, "val/")
-if not os.path.isdir(yolov5_images_test_dir):
-    os.mkdir(yolov5_images_test_dir)
-clear_hidden_files(yolov5_images_test_dir)
-yolov5_labels_train_dir = os.path.join(yolov5_labels_dir, "train/")
+yolov5_labels_train_dir = os.path.join(yolov5_train_dir, "labels/")
 if not os.path.isdir(yolov5_labels_train_dir):
     os.mkdir(yolov5_labels_train_dir)
 clear_hidden_files(yolov5_labels_train_dir)
-yolov5_labels_test_dir = os.path.join(yolov5_labels_dir, "val/")
+
+yolov5_test_dir = os.path.join(work_sapce_dir, "valid/")
+if not os.path.isdir(yolov5_test_dir):
+    os.mkdir(yolov5_test_dir)
+clear_hidden_files(yolov5_test_dir)
+yolov5_images_test_dir = os.path.join(yolov5_test_dir, "images/")
+if not os.path.isdir(yolov5_images_test_dir):
+    os.mkdir(yolov5_images_test_dir)
+clear_hidden_files(yolov5_images_test_dir)
+yolov5_labels_test_dir = os.path.join(yolov5_test_dir, "labels/")
 if not os.path.isdir(yolov5_labels_test_dir):
     os.mkdir(yolov5_labels_test_dir)
 clear_hidden_files(yolov5_labels_test_dir)
 
+
 train_file = open(os.path.join(wd, "yolov5_train.txt"), 'w')
-test_file = open(os.path.join(wd, "yolov5_val.txt"), 'w')
+test_file = open(os.path.join(wd, "yolov5_valid.txt"), 'w')
 train_file.close()
 test_file.close()
 train_file = open(os.path.join(wd, "yolov5_train.txt"), 'a')
-test_file = open(os.path.join(wd, "yolov5_val.txt"), 'a')
+test_file = open(os.path.join(wd, "yolov5_valid.txt"), 'a')
 list_imgs = os.listdir(image_dir)  # list image files
 prob = random.randint(1, 100)
 print("数据集总长度: %d" % len(list_imgs))
@@ -124,13 +127,15 @@ for i in range(0, len(list_imgs)):
         label_path = os.path.join(yolo_labels_dir, label_name)
     prob = random.randint(1, 100)
     print("Probability: %d" % prob)
-    if (prob < TRAIN_RATIO):  # train dataset
+    if (prob < TRAIN_RATIO):
+        # train dataset
         if os.path.exists(annotation_path):
             train_file.write(image_path + '\n')
             convert_annotation(nameWithoutExtention)  # convert label
             copyfile(image_path, yolov5_images_train_dir + voc_path)
             copyfile(label_path, yolov5_labels_train_dir + label_name)
-    else:  # test dataset
+    else:
+        # test dataset
         if os.path.exists(annotation_path):
             test_file.write(image_path + '\n')
             convert_annotation(nameWithoutExtention)  # convert label

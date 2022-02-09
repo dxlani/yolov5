@@ -486,6 +486,7 @@ if __name__ == '__main__':
     parser.add_argument('--bucket', type=str, default='', help='gsutil bucket')
     # 是否提前缓存图片到内存，以加快训练速度，默认为False
     parser.add_argument('--cache-images', action='store_true', help='cache images for faster training')
+    # 给图片加上权重进行训练
     parser.add_argument('--image-weights', action='store_true', help='use weighted image selection for training')
     parser.add_argument('--device', default='', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     # 是否进行多尺度训练，默认为False +/- 50%%
