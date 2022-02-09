@@ -6,9 +6,8 @@ from os.path import join
 import random
 from shutil import copyfile
 
-classes = ["phone"]
-# classes=["ball"]
-
+CLASSES = ["tangtang"]
+PATH = 'VOC2022'
 TRAIN_RATIO = 80
 
 
@@ -38,8 +37,8 @@ def convert(size, box):
 
 
 def convert_annotation(image_id):
-    in_file = open('VOCdevkit/VOC2007/Annotations/%s.xml' % image_id)
-    out_file = open('VOCdevkit/VOC2007/YOLOLabels/%s.txt' % image_id, 'w')
+    in_file = open(PATH+'/Annotations/%s.xml' % image_id)
+    out_file = open(PATH+'/YOLOLabels/%s.txt' % image_id, 'w')
     tree = ET.parse(in_file)
     root = tree.getroot()
     size = root.find('size')
@@ -49,9 +48,9 @@ def convert_annotation(image_id):
     for obj in root.iter('object'):
         difficult = obj.find('difficult').text
         cls = obj.find('name').text
-        if cls not in classes or int(difficult) == 1:
+        if cls not in CLASSES or int(difficult) == 1:
             continue
-        cls_id = classes.index(cls)
+        cls_id = CLASSES.index(cls)
         xmlbox = obj.find('bndbox')
         b = (float(xmlbox.find('xmin').text), float(xmlbox.find('xmax').text), float(xmlbox.find('ymin').text),
              float(xmlbox.find('ymax').text))
@@ -63,12 +62,9 @@ def convert_annotation(image_id):
 
 wd = os.getcwd()
 wd = os.getcwd()
-data_base_dir = os.path.join(wd, "VOCdevkit/")
-if not os.path.isdir(data_base_dir):
-    os.mkdir(data_base_dir)
-work_sapce_dir = os.path.join(data_base_dir, "VOC2007/")
-if not os.path.isdir(work_sapce_dir):
-    os.mkdir(work_sapce_dir)
+
+work_sapce_dir = os.path.join(wd, PATH+"/")
+
 annotation_dir = os.path.join(work_sapce_dir, "Annotations/")
 if not os.path.isdir(annotation_dir):
     os.mkdir(annotation_dir)
@@ -81,11 +77,11 @@ yolo_labels_dir = os.path.join(work_sapce_dir, "YOLOLabels/")
 if not os.path.isdir(yolo_labels_dir):
     os.mkdir(yolo_labels_dir)
 clear_hidden_files(yolo_labels_dir)
-yolov5_images_dir = os.path.join(data_base_dir, "images/")
+yolov5_images_dir = os.path.join(work_sapce_dir, "images/")
 if not os.path.isdir(yolov5_images_dir):
     os.mkdir(yolov5_images_dir)
 clear_hidden_files(yolov5_images_dir)
-yolov5_labels_dir = os.path.join(data_base_dir, "labels/")
+yolov5_labels_dir = os.path.join(work_sapce_dir, "labels/")
 if not os.path.isdir(yolov5_labels_dir):
     os.mkdir(yolov5_labels_dir)
 clear_hidden_files(yolov5_labels_dir)
@@ -114,7 +110,7 @@ train_file = open(os.path.join(wd, "yolov5_train.txt"), 'a')
 test_file = open(os.path.join(wd, "yolov5_val.txt"), 'a')
 list_imgs = os.listdir(image_dir)  # list image files
 prob = random.randint(1, 100)
-print("Probability: %d" % prob)
+print("数据集总长度: %d" % len(list_imgs))
 for i in range(0, len(list_imgs)):
     path = os.path.join(image_dir, list_imgs[i])
     if os.path.isfile(path):
