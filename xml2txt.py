@@ -91,7 +91,7 @@ if not os.path.isdir(yolov5_labels_train_dir):
     os.mkdir(yolov5_labels_train_dir)
 clear_hidden_files(yolov5_labels_train_dir)
 
-yolov5_test_dir = os.path.join(work_sapce_dir, "valid/")
+yolov5_test_dir = os.path.join(work_sapce_dir, "val/")
 if not os.path.isdir(yolov5_test_dir):
     os.mkdir(yolov5_test_dir)
 clear_hidden_files(yolov5_test_dir)
@@ -113,7 +113,7 @@ train_file = open(os.path.join(wd, "yolov5_train.txt"), 'a')
 test_file = open(os.path.join(wd, "yolov5_valid.txt"), 'a')
 list_imgs = os.listdir(image_dir)  # list image files
 prob = random.randint(1, 100)
-print("数据集总长度: %d" % len(list_imgs))
+print("数据集: %d个" % len(list_imgs))
 for i in range(0, len(list_imgs)):
     path = os.path.join(image_dir, list_imgs[i])
     if os.path.isfile(path):
