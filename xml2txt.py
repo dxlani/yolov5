@@ -6,7 +6,7 @@ from os.path import join
 import random
 from shutil import copyfile
 
-CLASSES = ["tangtang"]
+CLASSES = ["fire", "smoke", "smoking"]
 PATH = 'VOC2022'
 TRAIN_RATIO = 80
 
@@ -37,8 +37,8 @@ def convert(size, box):
 
 
 def convert_annotation(image_id):
-    in_file = open(PATH+'/Annotations/%s.xml' % image_id)
-    out_file = open(PATH+'/YOLOLabels/%s.txt' % image_id, 'w')
+    in_file = open(PATH+'/Annotations/%s.xml' % image_id, encoding='utf-8')
+    out_file = open(PATH+'/YOLOLabels/%s.txt' % image_id, 'w', encoding='utf-8')
     tree = ET.parse(in_file)
     root = tree.getroot()
     size = root.find('size')
@@ -105,12 +105,12 @@ if not os.path.isdir(yolov5_labels_test_dir):
 clear_hidden_files(yolov5_labels_test_dir)
 
 
-train_file = open(os.path.join(wd, "yolov5_train.txt"), 'w')
-test_file = open(os.path.join(wd, "yolov5_valid.txt"), 'w')
+train_file = open(os.path.join(wd, "yolov5_train.txt"), 'w', encoding='utf-8')
+test_file = open(os.path.join(wd, "yolov5_valid.txt"), 'w', encoding='utf-8')
 train_file.close()
 test_file.close()
-train_file = open(os.path.join(wd, "yolov5_train.txt"), 'a')
-test_file = open(os.path.join(wd, "yolov5_valid.txt"), 'a')
+train_file = open(os.path.join(wd, "yolov5_train.txt"), 'a', encoding='utf-8')
+test_file = open(os.path.join(wd, "yolov5_valid.txt"), 'a', encoding='utf-8')
 list_imgs = os.listdir(image_dir)  # list image files
 prob = random.randint(1, 100)
 print("数据集: %d个" % len(list_imgs))
@@ -126,7 +126,7 @@ for i in range(0, len(list_imgs)):
         label_name = nameWithoutExtention + '.txt'
         label_path = os.path.join(yolo_labels_dir, label_name)
     prob = random.randint(1, 100)
-    print("Probability: %d" % prob)
+    print("Probability: %d" % prob, i, list_imgs[i])
     if (prob < TRAIN_RATIO):
         # train dataset
         if os.path.exists(annotation_path):
