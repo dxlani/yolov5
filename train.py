@@ -492,7 +492,7 @@ if __name__ == '__main__':
     parser.add_argument('--notest', action='store_true', help='only test final epoch')
     # 不自动调整anchor
     parser.add_argument('--noautoanchor', action='store_true', help='disable autoanchor check')
-    # 否进行超参数进化
+    # 是否进行超参数进化 hyp.scratch.yaml
     parser.add_argument('--evolve', action='store_true', help='evolve hyperparameters')
     # gsutil bucket
     parser.add_argument('--bucket', type=str, default='', help='gsutil bucket')
