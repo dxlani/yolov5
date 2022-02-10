@@ -1,32 +1,26 @@
-'''
-Autor: dingxiaolin
-Date: 2022-02-10 21:23:31
-LastEditors: dingxiaolin
-LastEditTime: 2022-02-10 21:32:19
-'''
-import argparse
-import logging
-import math
-import os
+import argparse               # 解析命令行参数模块
+import logging                # 日志模块
+import math                   # 数学公式模块
+import os                     # 与操作系统进行交互的模块 包含文件路径操作和解析
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
-import random
-import time
-from copy import deepcopy
-from pathlib import Path
-from threading import Thread
+import random                 # 生成随机数模块
+import time                   # 时间模块 更底层
+from copy import deepcopy     # 深度拷贝模块
+from pathlib import Path      # Path将str转换为Path对象 使字符串路径易于操作的模块
+from threading import Thread  # 线程操作模块
 
-import numpy as np
-import torch.distributed as dist
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
-import torch.optim.lr_scheduler as lr_scheduler
-import torch.utils.data
-import yaml
-from torch.cuda import amp
-from torch.nn.parallel import DistributedDataParallel as DDP
-from torch.utils.tensorboard import SummaryWriter
-from tqdm import tqdm
+import numpy as np                # numpy数组操作模块
+import torch.distributed as dist  # 分布式训练模块
+import torch.nn as nn             # 对torch.nn.functional的类的封装 有很多和torch.nn.functional相同的函数
+import torch.nn.functional as F   # PyTorch函数接口 封装了很多卷积、池化等函数
+import torch.optim as optim       # PyTorch各种优化算法的库
+import torch.optim.lr_scheduler as lr_scheduler  # 学习率模块
+import torch.utils.data           # 数据操作模块
+import yaml                       # 操作yaml文件模块
+from torch.cuda import amp        # PyTorch amp自动混合精度训练模块
+from torch.nn.parallel import DistributedDataParallel as DDP  # 多卡训练模块
+from torch.utils.tensorboard import SummaryWriter # tensorboard模块
+from tqdm import tqdm  # 进度条模块
 
 import test  # import test.py to get mAP after each epoch
 from models.experimental import attempt_load
@@ -41,11 +35,16 @@ from utils.loss import ComputeLoss
 from utils.plots import plot_images, plot_labels, plot_results, plot_evolution
 from utils.torch_utils import ModelEMA, select_device, intersect_dicts, torch_distributed_zero_first, is_parallel
 from utils.wandb_logging.wandb_utils import WandbLogger, check_wandb_resume
-
+# 初始化日志模块
 logger = logging.getLogger(__name__)
 
-
+"""
+:params hyp: data/hyps/hyp.scratch.yaml   hyp dictionary
+:params opt: main中opt参数
+:params device: 当前设备
+"""
 def train(hyp, opt, device, tb_writer=None):
+    
     logger.info(colorstr('hyperparameters: ') + ', '.join(f'{k}={v}' for k, v in hyp.items()))
     save_dir, epochs, batch_size, total_batch_size, weights, rank = \
         Path(opt.save_dir), opt.epochs, opt.batch_size, opt.total_batch_size, opt.weights, opt.global_rank
@@ -58,16 +57,17 @@ def train(hyp, opt, device, tb_writer=None):
     results_file = save_dir / 'results.txt'
 
     # Save run settings
-    with open(save_dir / 'hyp.yaml', 'w') as f:
+    with open(save_dir / 'hyp.yaml', 'w',encoding='utf-8') as f:
         yaml.dump(hyp, f, sort_keys=False)
-    with open(save_dir / 'opt.yaml', 'w') as f:
+    with open(save_dir / 'opt.yaml', 'w',encoding='utf-8') as f:
         yaml.dump(vars(opt), f, sort_keys=False)
 
     # Configure
+    # 是否需要画图: 所有的labels信息、前三次迭代的barch、训练结果等
     plots = not opt.evolve  # create plots
     cuda = device.type != 'cpu'
     init_seeds(2 + rank)
-    with open(opt.data) as f:
+    with open(opt.data,encoding='utf-8') as f:
         data_dict = yaml.load(f, Loader=yaml.SafeLoader)  # data dict
     is_coco = opt.data.endswith('coco.yaml')
 
@@ -141,13 +141,16 @@ def train(hyp, opt, device, tb_writer=None):
     # Scheduler https://arxiv.org/pdf/1812.01187.pdf
     # https://pytorch.org/docs/stable/_modules/torch/optim/lr_scheduler.html#OneCycleLR
     if opt.linear_lr:
+        # 使用线性学习率
         lf = lambda x: (1 - x / (epochs - 1)) * (1.0 - hyp['lrf']) + hyp['lrf']  # linear
     else:
+        # 使用one cycle 学习率  https://arxiv.org/pdf/1803.09820.pdf
         lf = one_cycle(1, hyp['lrf'], epochs)  # cosine 1->hyp['lrf']
     scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=lf)
-    # plot_lr_scheduler(optimizer, scheduler, epochs)
+    # plot_lr_scheduler(optimizer, scheduler, epochs) # 画出学习率变化曲线
 
     # EMA
+    # 单卡训练: 使用EMA（指数移动平均）对模型的参数做平均, 一种给予近期数据更高权重的平均方法, 以求提高测试指标并增加模型鲁棒。
     ema = ModelEMA(model) if rank in [-1, 0] else None
 
     # Resume
@@ -179,15 +182,16 @@ def train(hyp, opt, device, tb_writer=None):
         del ckpt, state_dict
 
     # Image sizes
-    gs = max(int(model.stride.max()), 32)  # grid size (max stride)
+    gs = max(int(model.stride.max()), 32)  # grid size (max stride) gs: 获取模型最大stride=32
     nl = model.model[-1].nl  # number of detection layers (used for scaling hyp['obj'])
+    # 获取训练图片和测试图片分辨率 imgsz=640  imgsz_test=640
     imgsz, imgsz_test = [check_img_size(x, gs) for x in opt.img_size]  # verify imgsz are gs-multiples
 
-    # DP mode
+     # 是否使用DDP mode
     if cuda and rank == -1 and torch.cuda.device_count() > 1:
         model = torch.nn.DataParallel(model)
 
-    # SyncBatchNorm
+    # SyncBatchNorm  是否使用跨卡BN
     if opt.sync_bn and cuda and rank != -1:
         model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model).to(device)
         logger.info('Using SyncBatchNorm()')
@@ -197,6 +201,8 @@ def train(hyp, opt, device, tb_writer=None):
                                             hyp=hyp, augment=True, cache=opt.cache_images, rect=opt.rect, rank=rank,
                                             world_size=opt.world_size, workers=opt.workers,
                                             image_weights=opt.image_weights, quad=opt.quad, prefix=colorstr('train: '))
+
+    # 获取标签中最大类别值，与类别数作比较，如果小于类别数则表示有问题
     mlc = np.concatenate(dataset.labels, 0)[:, 0].max()  # max label class
     nb = len(dataloader)  # number of batches
     assert mlc < nc, 'Label class %g exceeds nc=%g in %s. Possible class labels are 0-%g' % (mlc, nc, opt.data, nc - 1)
@@ -372,7 +378,7 @@ def train(hyp, opt, device, tb_writer=None):
                                                  is_coco=is_coco)
 
             # Write
-            with open(results_file, 'a') as f:
+            with open(results_file, 'a',encoding='utf-8') as f:
                 f.write(s + '%10.4g' * 7 % results + '\n')  # append metrics, val_loss
             if len(opt.name) and opt.bucket:
                 os.system('gsutil cp %s gs://%s/results/results%s.txt' % (results_file, opt.bucket, opt.name))
@@ -462,38 +468,67 @@ def train(hyp, opt, device, tb_writer=None):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    # 权重文件路径，用于迁移训练，可以以官方提供的几个训练好的模型为基础进行训练
     parser.add_argument('--weights', type=str, default='yolov5s.pt', help='initial weights path')
-    parser.add_argument('--cfg', type=str, default='', help='model.yaml path')
-    parser.add_argument('--data', type=str, default='data/normal.yaml', help='data.yaml path')
+    # 存储模型结构的配置文件
+    parser.add_argument('--cfg', type=str, default='models/yolov5s.yaml', help='model.yaml path')
+    # 存储训练、测试的数据的文件
+    parser.add_argument('--data', type=str, default='phone/data.yaml', help='data.yaml path')
+    # 超参数配置的yaml文件路径
     parser.add_argument('--hyp', type=str, default='data/hyp.scratch.yaml', help='hyperparameters path')
+    # 训练总轮次
     parser.add_argument('--epochs', type=int, default=100)
+    # 每个轮次下图片训练的批次大小
     parser.add_argument('--batch-size', type=int, default=10, help='total batch size for all GPUs')
+    # 输入图片宽高,必须是32的倍数，输入250会自动调整成256,注意这里是训练和mAP测试的图像尺寸，而不是一个图像的宽高
     parser.add_argument('--img-size', nargs='+', type=int, default=[640, 640], help='[train, test] image sizes')
+    # 进行矩形训练
     parser.add_argument('--rect', action='store_true', help='rectangular training')
-    parser.add_argument('--resume', nargs='?', const=True, default=True, help='resume most recent training')
+    # 恢复最近保存的模型开始训练 从给定的path/last.pt恢复训练，如果为空，则从最近保存的path/last.pt恢复训练
+    parser.add_argument('--resume', nargs='?', const=True, default=False, help='resume most recent training')
+    # 仅保存最终checkpoint
     parser.add_argument('--nosave', action='store_true', help='only save final checkpoint')
+    # 仅测试最后的epoch
     parser.add_argument('--notest', action='store_true', help='only test final epoch')
+    # 不自动调整anchor
     parser.add_argument('--noautoanchor', action='store_true', help='disable autoanchor check')
+    # 是否进行超参数进化 hyp.scratch.yaml
     parser.add_argument('--evolve', action='store_true', help='evolve hyperparameters')
+    # gsutil bucket
     parser.add_argument('--bucket', type=str, default='', help='gsutil bucket')
+    # 是否提前缓存图片到内存，以加快训练速度，默认为False
     parser.add_argument('--cache-images', action='store_true', help='cache images for faster training')
+    # 给图片加上权重进行训练
     parser.add_argument('--image-weights', action='store_true', help='use weighted image selection for training')
     parser.add_argument('--device', default='', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
+    # 是否进行多尺度训练，默认为False +/- 50%%
     parser.add_argument('--multi-scale', action='store_true', help='vary img-size +/- 50%%')
+    # 将所有数据按照一个类别进行训练
     parser.add_argument('--single-cls', action='store_true', help='train multi-class data as single-class')
+    # 是否使用 torch.optim.Adam() 优化器，默认是False
     parser.add_argument('--adam', action='store_true', help='use torch.optim.Adam() optimizer')
+    # 是否使用跨卡同步BN，仅在DDP模式中使用
     parser.add_argument('--sync-bn', action='store_true', help='use SyncBatchNorm, only available in DDP mode')
     parser.add_argument('--local_rank', type=int, default=-1, help='DDP parameter, do not modify')
     parser.add_argument('--workers', type=int, default=8, help='maximum number of dataloader workers')
+    # 训练结果保存的根目录 默认是runs/train
     parser.add_argument('--project', default='runs/train', help='save to project/name')
+    # wandb entity 默认None
     parser.add_argument('--entity', default=None, help='W&B entity')
+    # 练结果保存的目录 默认是exp  最终: runs/train/exp
     parser.add_argument('--name', default='exp', help='save to project/name')
+    # 如果文件存在就ok不存在就新建或increment name  默认False(默认文件都是不存在的)
     parser.add_argument('--exist-ok', action='store_true', help='existing project/name ok, do not increment')
     parser.add_argument('--quad', action='store_true', help='quad dataloader')
+    # 采用余弦退火的算法进行调整学习率  线性学习率  默认False 使用cosine lr
     parser.add_argument('--linear-lr', action='store_true', help='linear LR')
+    # 标签平滑操作
     parser.add_argument('--label-smoothing', type=float, default=0.0, help='Label smoothing epsilon')
+    # 是否上传dataset到wandb tabel(将数据集作为交互式 dsviz表 在浏览器中查看、查询、筛选和分析数据集) 默认False
     parser.add_argument('--upload_dataset', action='store_true', help='Upload dataset as W&B artifact table')
+    # 设置界框图像记录间隔 Set bounding-box image logging interval for W&B 默认-1   opt.epochs // 10
     parser.add_argument('--bbox_interval', type=int, default=-1, help='Set bounding-box image logging interval for W&B')
+    # 默认-1 不需要log model 信息
     parser.add_argument('--save_period', type=int, default=-1, help='Log model after every "save_period" epoch')
     parser.add_argument('--artifact_alias', type=str, default="latest", help='version of dataset artifact to be used')
     opt = parser.parse_args()
@@ -512,7 +547,7 @@ if __name__ == '__main__':
         ckpt = opt.resume if isinstance(opt.resume, str) else get_latest_run()  # specified or most recent path
         assert os.path.isfile(ckpt), 'ERROR: --resume checkpoint does not exist'
         apriori = opt.global_rank, opt.local_rank
-        with open(Path(ckpt).parent.parent / 'opt.yaml') as f:
+        with open(Path(ckpt).parent.parent / 'opt.yaml',encoding='utf-8') as f:
             opt = argparse.Namespace(**yaml.load(f, Loader=yaml.SafeLoader))  # replace
         opt.cfg, opt.weights, opt.resume, opt.batch_size, opt.global_rank, opt.local_rank = '', ckpt, True, opt.total_batch_size, *apriori  # reinstate
         logger.info('Resuming training from %s' % ckpt)
@@ -544,9 +579,9 @@ if __name__ == '__main__':
     if not opt.evolve:
         tb_writer = None  # init loggers
         if opt.global_rank in [-1, 0]:
-            prefix = colorstr('tensorboard: ')
+            prefix = colorstr('tensorboard: ') # 彩色打印信息
             logger.info(f"{prefix}Start with 'tensorboard --logdir {opt.project}', view at http://localhost:6006/")
-            tb_writer = SummaryWriter(opt.save_dir)  # Tensorboard
+            tb_writer = SummaryWriter(opt.save_dir)  # Tensorboarddd
         train(hyp, opt, device, tb_writer)
 
     # Evolve hyperparameters (optional)
