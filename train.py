@@ -2,7 +2,7 @@
 Autor: dingxiaolin
 Date: 2022-02-10 21:23:31
 LastEditors: dingxiaolin
-LastEditTime: 2022-02-10 21:32:19
+LastEditTime: 2022-02-11 09:17:07
 '''
 import argparse
 import logging
@@ -470,7 +470,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch-size', type=int, default=10, help='total batch size for all GPUs')
     parser.add_argument('--img-size', nargs='+', type=int, default=[640, 640], help='[train, test] image sizes')
     parser.add_argument('--rect', action='store_true', help='rectangular training')
-    parser.add_argument('--resume', nargs='?', const=True, default=True, help='resume most recent training')
+    parser.add_argument('--resume', nargs='?', const=True, default=False, help='resume most recent training')
     parser.add_argument('--nosave', action='store_true', help='only save final checkpoint')
     parser.add_argument('--notest', action='store_true', help='only test final epoch')
     parser.add_argument('--noautoanchor', action='store_true', help='disable autoanchor check')
