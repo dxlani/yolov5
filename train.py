@@ -2,7 +2,7 @@
 Autor: dingxiaolin
 Date: 2022-02-10 21:23:31
 LastEditors: dingxiaolin
-LastEditTime: 2022-02-13 08:36:31
+LastEditTime: 2022-03-19 23:02:44
 '''
 import argparse
 import logging
@@ -466,7 +466,7 @@ if __name__ == '__main__':
     parser.add_argument('--cfg', type=str, default='models/yolov5s.yaml', help='model.yaml path')
     parser.add_argument('--data', type=str, default='data/normal.yaml', help='data.yaml path')
     parser.add_argument('--hyp', type=str, default='data/hyp.scratch.yaml', help='hyperparameters path')
-    parser.add_argument('--epochs', type=int, default=100)
+    parser.add_argument('--epochs', type=int, default=130)
     parser.add_argument('--batch-size', type=int, default=10, help='total batch size for all GPUs')
     parser.add_argument('--img-size', nargs='+', type=int, default=[640, 640], help='[train, test] image sizes')
     parser.add_argument('--rect', action='store_true', help='rectangular training')
